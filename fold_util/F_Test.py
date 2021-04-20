@@ -26,12 +26,12 @@ def Test_for_single_node_attack(adj, feat, label, backdoor_idx, target_idx, opt:
 
     # A -> D^-0.5 * A * D^-0.5
     if is_test:
-        adj_nor = F_Nor.normalize_adj(adj)
+        adj_nor = F_Nor.normalize_adj_sym(adj)
     else:
         if opt.flag_att_single_node == 1:
             # 如果是对单节点进行攻击
             if np.all(opt.normed_adj_single_node == 0):
-                adj_nor = F_Nor.normalize_adj(adj)
+                adj_nor = F_Nor.normalize_adj_sym(adj)
                 opt.normed_adj_single_node = np.copy(adj_nor)
             else:
                 adj_nor = np.copy(opt.normed_adj_single_node)
@@ -39,7 +39,7 @@ def Test_for_single_node_attack(adj, feat, label, backdoor_idx, target_idx, opt:
             # 如果是对单节点多测试进行攻击
             if np.all(opt.normed_adj_single_node_group_np[opt.normed_adj_idx] == 0):
                 # 如果是全0数组 则说明还未计算normed_adj
-                adj_nor = F_Nor.normalize_adj(adj)
+                adj_nor = F_Nor.normalize_adj_sym(adj)
                 opt.normed_adj_single_node_group_np[opt.normed_adj_idx] = np.copy(adj_nor)
             else:
                 adj_nor = np.copy(opt.normed_adj_single_node_group_np[opt.normed_adj_idx])
@@ -47,14 +47,14 @@ def Test_for_single_node_attack(adj, feat, label, backdoor_idx, target_idx, opt:
             # 如果是对一类的节点进行攻击
             if np.all(opt.normed_adj_class_np[opt.normed_adj_idx] == 0):
                 # 如果是全0数组 则还未计算normed_adj
-                adj_nor = F_Nor.normalize_adj(adj)
+                adj_nor = F_Nor.normalize_adj_sym(adj)
                 opt.normed_adj_class_np[opt.normed_adj_idx] = np.copy(adj_nor)
             else:
                 adj_nor = np.copy(opt.normed_adj_class_np[opt.normed_adj_idx])
         elif opt.flag_att_group_nodes == 1:
             # 如果是对全图节点进行攻击
             if np.all(opt.normed_adj_group_np[opt.normed_adj_idx] == 0):
-                adj_nor = F_Nor.normalize_adj(adj)
+                adj_nor = F_Nor.normalize_adj_sym(adj)
                 opt.normed_adj_group_np[opt.normed_adj_idx] = np.copy(adj_nor)
             else:
                 adj_nor = np.copy(opt.normed_adj_group_np[opt.normed_adj_idx])
@@ -119,7 +119,7 @@ def Test_for_single_node_group_attack(adj, feat, label, backdoor_idx, target_idx
     label_target_np = np.where(label[target_idx])[0]
 
     # A -> D^-0.5 * A * D^-0.5
-    adj_nor = F_Nor.normalize_adj(adj)
+    adj_nor = F_Nor.normalize_adj_sym(adj)
 
     # 是否对特征进行标准化
     if is_nor_feat:
@@ -182,12 +182,12 @@ def Test_for_minus_node_attack(adj, feat, label, backdoor_idx, target_idx, opt: 
     """A->D^-0.5 * A * D^-0.5"""
     # 对已正则化后的邻接矩阵进行存储
     if is_test:
-        adj_nor = F_Nor.normalize_adj(adj)
+        adj_nor = F_Nor.normalize_adj_sym(adj)
     else:
         if opt.flag_att_single_node == 1:
             # 如果是对单节点进行攻击
             if np.all(opt.normed_adj_single_node == 0):
-                adj_nor = F_Nor.normalize_adj(adj)
+                adj_nor = F_Nor.normalize_adj_sym(adj)
                 opt.normed_adj_single_node = np.copy(adj_nor)
             else:
                 adj_nor = np.copy(opt.normed_adj_single_node)
@@ -195,7 +195,7 @@ def Test_for_minus_node_attack(adj, feat, label, backdoor_idx, target_idx, opt: 
             # 如果是对单节点多测试进行攻击
             if np.all(opt.normed_adj_single_node_group_np[opt.normed_adj_idx] == 0):
                 # 如果是全0数组 则说明还未计算normed_adj
-                adj_nor = F_Nor.normalize_adj(adj)
+                adj_nor = F_Nor.normalize_adj_sym(adj)
                 opt.normed_adj_single_node_group_np[opt.normed_adj_idx] = np.copy(adj_nor)
             else:
                 adj_nor = np.copy(opt.normed_adj_single_node_group_np[opt.normed_adj_idx])
@@ -203,14 +203,14 @@ def Test_for_minus_node_attack(adj, feat, label, backdoor_idx, target_idx, opt: 
             # 如果是对一类的节点进行攻击
             if np.all(opt.normed_adj_class_np[opt.normed_adj_idx] == 0):
                 # 如果是全0数组 则还未计算normed_adj
-                adj_nor = F_Nor.normalize_adj(adj)
+                adj_nor = F_Nor.normalize_adj_sym(adj)
                 opt.normed_adj_class_np[opt.normed_adj_idx] = np.copy(adj_nor)
             else:
                 adj_nor = np.copy(opt.normed_adj_class_np[opt.normed_adj_idx])
         elif opt.flag_att_group_nodes == 1:
             # 如果是对全图节点进行攻击
             if np.all(opt.normed_adj_group_np[opt.normed_adj_idx] == 0):
-                adj_nor = F_Nor.normalize_adj(adj)
+                adj_nor = F_Nor.normalize_adj_sym(adj)
                 opt.normed_adj_group_np[opt.normed_adj_idx] = np.copy(adj_nor)
             else:
                 adj_nor = np.copy(opt.normed_adj_group_np[opt.normed_adj_idx])

@@ -1,7 +1,7 @@
 from .F_Normalize import normalize_adj_degree
 from .F_Normalize import normalize_feat
 from .F_Normalize import get_edge_list
-from .F_Normalize import normalize_adj
+from .F_Normalize import normalize_adj_sym
 from .F_Normalize import nor_sub_adj
 from .F_Normalize import nor_sub_adj_eye
 

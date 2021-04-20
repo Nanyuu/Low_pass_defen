@@ -4,6 +4,7 @@ from fold_util import F_Info
 import torch as t
 from fold_util import F_Normalize as F_Nor
 from fold_defense import simGraph_init
+from fold_defense import low_pass_adj
 from sklearn.metrics.pairwise import euclidean_distances
 
 model_path = "../checkpoint"
@@ -20,7 +21,7 @@ base_adj, base_feat, label, idx_train, idx_val, idx_test = data_load.process_dat
 label_not_one_hot = F_Info.F_one_hot_to_label(label)
 data_info = F_Info.C_per_info(base_adj, base_feat, label, idx_train, idx_val, idx_test, opts)
 
-adj_nor = F_Nor.normalize_adj(base_adj)
+adj_nor = F_Nor.normalize_adj_sym(base_adj)
 feat_nor = F_Nor.normalize_feat(base_feat)
 
 # 读取模型
@@ -45,6 +46,10 @@ output = model(feat_nor_t, adj_nor_t)
 print(output[0])
 
 sim_adj_l0 = simGraph_init(base_feat, p_neighbor_num=20, p_layer_id=0)
+
+modified_adj = low_pass_adj(base_adj, sim_adj_l0, base_feat, p_filter_value=1)
+
+print(modified_adj)
 
 
 

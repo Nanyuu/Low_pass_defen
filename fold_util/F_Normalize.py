@@ -47,7 +47,7 @@ def get_edge_list(adj_np: np.ndarray) -> np.ndarray:
     return edge_list
 
 
-def normalize_adj(adj_np: np.ndarray) -> np.ndarray:
+def normalize_adj_sym(adj_np: np.ndarray) -> np.ndarray:
     """输入邻接矩阵 输出D^-0.5 * A * D^-0.5"""
     adj_csr = sp.csr_matrix(adj_np)
 

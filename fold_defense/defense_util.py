@@ -1,7 +1,6 @@
 import numpy as np
 import torch as t
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.metrics.pairwise import euclidean_distances
 from fold_util import F_Normalize as F_Nor
 import scipy.sparse as sp
 
@@ -40,17 +39,17 @@ def simGraph_init(p_feat:np.ndarray, p_neighbor_num: int, p_layer_id: int):
 # 1、对于每个节点，根据邻接矩阵计算欧氏距离 l2
 # 2、对于距离进行如下操作： 1/max(1,distance(u,v))
 # 3、对于得到的距离相加和，除以度(d), 多余的部分使用SimAdj的邻接矩阵数值补充
-def modified_adj(p_adj_original:np.ndarray, p_adj_sim:np.ndarray,p_feat:np.ndarray, p_filter_value):
+def low_pass_adj(p_adj_original:np.ndarray, p_adj_sim:np.ndarray,p_feat:np.ndarray, p_filter_value):
     """
     compute the modified_Adj using the distance between two nodes in A
     :param p_adj_original: original adj (perturbed)
-    :param p_adj_sim:
-    :param p_feat:
+    :param p_adj_sim: similarity adj
+    :param p_feat: feature_matrix or adj_matrix
     :param p_filter_value:
-    :return:
+    :return: modified adj
     """
-    nor_adj = F_Nor.normalize_adj(p_adj_original)
-    nor_adj_sim = F_Nor.normalize_adj(p_adj_sim)
+    nor_adj = F_Nor.normalize_adj_sym(p_adj_original)
+    nor_adj_sim = F_Nor.normalize_adj_sym(p_adj_sim)
     res_adj = np.zeros([nor_adj.shape[0],nor_adj.shape[0]])
     for i in range(nor_adj.shape[0]):
         # 对每个连接的节点特征计算欧氏距离
@@ -59,7 +58,7 @@ def modified_adj(p_adj_original:np.ndarray, p_adj_sim:np.ndarray,p_feat:np.ndarr
         temp_score = 0
 
         for j in linked_nodes:
-            temp_dis = euclidean_distances(p_feat[i], p_feat[j])
+            temp_dis = np.linalg.norm(p_feat[i] - p_feat[j])     # Euclidean distance == l2 norm
             temp_score = temp_score + p_filter_value/max(p_filter_value, temp_dis)
             res_adj[i][j] = temp_score*nor_adj[i][j]
 
