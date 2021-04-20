@@ -55,16 +55,17 @@ def low_pass_adj(p_adj_original:np.ndarray, p_adj_sim:np.ndarray,p_feat:np.ndarr
         # 对每个连接的节点特征计算欧氏距离
         linked_nodes = np.where(nor_adj[i]!=0)[0]
         temp_degree = linked_nodes.shape[0]
+        temp_sym_degree = np.sum(nor_adj[i])
         temp_score = 0
 
         for j in linked_nodes:
             temp_dis = np.linalg.norm(p_feat[i] - p_feat[j])     # Euclidean distance == l2 norm
             temp_score = temp_score + p_filter_value/max(p_filter_value, temp_dis)
-            res_adj[i][j] = temp_score*nor_adj[i][j]
+            res_adj[i][j] = p_filter_value/max(p_filter_value, temp_dis)*nor_adj[i][j]
 
         score_for_i = temp_score/temp_degree
         score_for_sim = 1-score_for_i
-        res_adj[i] = res_adj[i] + nor_adj_sim[i]*score_for_sim
+        res_adj[i] = res_adj[i] + nor_adj_sim[i]*(np.sum(nor_adj[i]) - np.sum(res_adj[i]))
 
     return res_adj
 
