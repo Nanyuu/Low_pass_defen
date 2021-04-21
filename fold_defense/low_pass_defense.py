@@ -4,8 +4,11 @@ from fold_util import F_Info
 import torch as t
 from fold_util import F_Normalize as F_Nor
 from fold_defense import simGraph_init
-from fold_defense import low_pass_adj
+from fold_defense import low_pass_adj_sym
 from sklearn.metrics.pairwise import euclidean_distances
+import torch.nn.functional as F
+from train import F_accuracy
+import numpy as np
 
 model_path = "../checkpoint"
 
@@ -27,6 +30,8 @@ feat_nor = F_Nor.normalize_feat(base_feat)
 # 读取模型
 model = t.load("{}/{}/GCN.t7".format(opt.model_path, opt.dataset))['model']
 
+label_tensor = t.from_numpy(label_not_one_hot).long()
+
 
 activation = {}
 def get_activation(name):
@@ -45,11 +50,25 @@ output = model(feat_nor_t, adj_nor_t)
 
 print(output[0])
 
-sim_adj_l0 = simGraph_init(base_feat, p_neighbor_num=20, p_layer_id=0)
+sim_adj_h0 = simGraph_init(base_feat, p_neighbor_num=20, p_layer_id=0)
 
-modified_adj = low_pass_adj(base_adj, sim_adj_l0, base_feat, p_filter_value=1)
+modified_adj_h0 = low_pass_adj_sym(base_adj, sim_adj_h0, base_feat, p_filter_value=1)
 
-print(modified_adj)
+modified_adj_h0_t = t.from_numpy(modified_adj_h0).float().cuda()
+gc1 = model.gc1
+h1_gc = gc1(feat_nor_t, modified_adj_h0_t)
+h1_relu = t.relu(h1_gc)
+
+sim_adj_h1 = simGraph_init(h1_relu.detach().cpu().numpy(), p_neighbor_num=20, p_layer_id=1)
+
+modified_adj_h1 = low_pass_adj_sym(base_adj, sim_adj_h1, h1_relu.detach().cpu().numpy(), p_filter_value=1)
+modified_adj_h1_t = t.from_numpy(modified_adj_h1).float().cuda()
+gc2 = model.gc2
+h2_gc = gc2(h1_relu, modified_adj_h1_t)
+h2_softmax = F.log_softmax(h2_gc, dim=1)
+
+test_Acc_modified = F_accuracy(h2_softmax[idx_test], label_tensor[idx_test])
+test_Acc_origin = F_accuracy(output[idx_test], label_tensor[idx_test])
 
 
 

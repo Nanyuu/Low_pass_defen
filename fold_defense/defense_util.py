@@ -39,7 +39,7 @@ def simGraph_init(p_feat:np.ndarray, p_neighbor_num: int, p_layer_id: int):
 # 1、对于每个节点，根据邻接矩阵计算欧氏距离 l2
 # 2、对于距离进行如下操作： 1/max(1,distance(u,v))
 # 3、对于得到的距离相加和，除以度(d), 多余的部分使用SimAdj的邻接矩阵数值补充
-def low_pass_adj(p_adj_original:np.ndarray, p_adj_sim:np.ndarray,p_feat:np.ndarray, p_filter_value):
+def low_pass_adj_sym(p_adj_original:np.ndarray, p_adj_sim:np.ndarray, p_feat:np.ndarray, p_filter_value):
     """
     compute the modified_Adj using the distance between two nodes in A
     :param p_adj_original: original adj (perturbed)

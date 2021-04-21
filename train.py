@@ -14,7 +14,6 @@ from tqdm import tqdm
 from fold_model import GCN
 from fold_util import F_Normalize as F_Nor
 # from fold_model import GCN_PyG
-my_file
 
 def train(p_adj_np: np.ndarray, p_feat_np: np.ndarray, p_labels_np: np.ndarray, p_idx_train_np, p_idx_val_np, is_normalize_feat=False):
     use_gpu = t.cuda.is_available()
