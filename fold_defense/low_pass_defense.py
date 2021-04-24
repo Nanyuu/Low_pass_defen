@@ -9,6 +9,8 @@ from sklearn.metrics.pairwise import euclidean_distances
 import torch.nn.functional as F
 from train import F_accuracy
 import numpy as np
+import scipy.sparse as sp
+from deeprobust.graph import utils
 
 model_path = "../checkpoint"
 
@@ -29,8 +31,12 @@ feat_nor = F_Nor.normalize_feat(base_feat)
 
 # 读取模型
 model = t.load("{}/{}/GCN.t7".format(opt.model_path, opt.dataset))['model']
-
 label_tensor = t.from_numpy(label_not_one_hot).long()
+
+# load_modified_adj
+adj_after_attack = sp.load_npz("../fold_attack/adj_After_Attack/MetaAttack/test0/modified_adj_0.npz").A
+adj_after_attack_nor = F_Nor.normalize_adj_sym(adj_after_attack)
+attack_test_node = np.load(r"D:\Learning Project\python_project\low_pass_def\fold_attack\adj_After_Attack\MetaAttack\test0\idx_test.npy")
 
 
 activation = {}
