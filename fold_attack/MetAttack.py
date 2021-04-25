@@ -12,7 +12,7 @@ import torch as t
 import os
 
 opt = opts()
-rand_seed = 2
+rand_seed = 10
 
 data_load = dataset.c_dataset_loader(opt.dataset, ".{}".format(opt.data_path))
 adj, features, label, _,_,_ = data_load.process_data()
@@ -28,11 +28,11 @@ idx_unlabeled = np.union1d(idx_val, idx_test)
 
 # Setup Surrogate model
 surrogate = GCN(nfeat=features.shape[1], nclass=labels.max().item() + 1,
-                     nhid=16, dropout=0, with_relu=False, with_bias=False, device='cuda:0').cuda()
+                     nhid=16, dropout=0, with_relu=False, with_bias=False, device='cuda').cuda()
 surrogate.fit(features, adj, labels, idx_train, idx_val, patience=30, verbose=True)
 # Setup Attack Model
 model = Metattack(surrogate, nnodes=adj.shape[0], feature_shape=features.shape,
-                       attack_structure=True, attack_features=False, device='cuda:0', lambda_=0).cuda()
+                       attack_structure=True, attack_features=False, device='cuda', lambda_=0)
 # Attack
 n_perturbations = (idx_train.shape[0] + idx_val.shape[0])*2
 model.attack(features, adj, labels, idx_train, idx_unlabeled, n_perturbations=n_perturbations, ll_constraint=False)

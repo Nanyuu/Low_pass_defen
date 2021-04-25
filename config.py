@@ -15,7 +15,7 @@ class opts():
     model = 'SGC'
     feature_Nor = True  # 决定是否使用特征标准化 （按行标准化）
     data_path = "./fold_data/Data/Planetoid"  # 数据集默认路径
-    data_path_graphRobust = r'D:\Learning Project\python_project\low_pass_def\fold_data\Data\Graphrobust'
+    data_path_graphRobust = r'D:\Python Project\defense\Low_pass_defense\fold_data\Data\Graphrobust'
     model_path = "./checkpoint"  # 模型默认路径
     np_random_seed = 100  # numpy的随机因子
     use_cuda = True
