@@ -22,51 +22,58 @@ opt.model = 'GCN'
 
 # 读取数据集
 data_load = dataset.c_dataset_loader(opt.dataset, opt.data_path)
-base_adj, base_feat, label, idx_train, idx_val, idx_test = data_load.process_data()
-label_not_one_hot = F_Info.F_one_hot_to_label(label)
+base_adj, base_feat,_,_,_,_  = data_load.process_data()
 
-# load_metAttack
-attack_name = "MetAttack"
-model_name = "GCN"
+model = t.load("../fold_attack/surrogate")
+adj_per = sp.load_npz("../fold_attack/pertAdj.npz").A
+idx_info = t.load("../fold_attack/idx_info")
 
-attack_base_root = "../fold_attack/adj_After_Attack/{}/{}".format(attack_name,model_name)
-attack_info = t.load("{}/attack_info_1".format(attack_base_root))
+idx_train = idx_info['train']
+idx_val = idx_info['val']
+idx_test = idx_info['test']
 
-adj_nor = F_Nor.normalize_adj_sym(base_adj)
-
-
-# load_modified_adj
-adj_after_attack = attack_info['modified_adj'].A
-adj_after_attack_nor = F_Nor.normalize_adj_sym(adj_after_attack)
-idx_test_attack = attack_info['idx_test']
+labels = model.labels
 
 # check output
-adj_after_attack_nor_t = t.from_numpy(adj_after_attack_nor).float().cuda()
+adj_per_nor_t = t.from_numpy(adj_per).float().cuda()
 
 hidden = t.from_numpy(base_feat).float().cuda()
-hidden = adj_after_attack_nor_t @ hidden @ attack_info['model_weight'][0]
-hidden = adj_after_attack_nor_t @ hidden @ attack_info['model_weight'][1]
+hidden = adj_per_nor_t @ hidden @ model.gc1.weight
+if model.with_bias:
+    hidden = hidden + model.gc1.bias
+if model.with_relu:
+    hidden = F.relu(hidden)
+hidden = adj_per_nor_t @ hidden @ model.gc2.weight
+if model.with_bias:
+    hidden = hidden + model.gc2.bias
 
 output = F.log_softmax(hidden, dim=1)
-acc_after_attack = utils.accuracy(output[idx_test_attack], t.from_numpy(label_not_one_hot[idx_test_attack]).cuda())
+acc_after_attack = utils.accuracy(output[idx_test], labels[idx_test])
 
 # do the low_pass
-
 sim_adj_h0 = simGraph_init(base_feat, p_neighbor_num=20, p_layer_id=0)
 
-modified_adj_h0 = low_pass_adj_sym(adj_after_attack, sim_adj_h0, base_feat, p_filter_value=1)
+modified_adj_h0 = low_pass_adj_sym(adj_per, sim_adj_h0, base_feat, p_filter_value=1)
 
 modified_adj_h0_t = t.from_numpy(modified_adj_h0).float().cuda()
 
 hidden_low_pass_0 = t.from_numpy(base_feat).float().cuda()
-hidden_low_pass_h0 = modified_adj_h0_t @ hidden_low_pass_0 @ attack_info['model_weight'][0]
+hidden_low_pass_h0 = modified_adj_h0_t @ hidden_low_pass_0 @ model.gc1.weight
+if model.with_bias:
+    hidden_low_pass_h0 = hidden_low_pass_h0 + model.gc1.bias
+if model.with_relu:
+    hidden_low_pass_h0 = F.relu(hidden_low_pass_h0)
+
 
 sim_adj_h1 = simGraph_init(hidden_low_pass_h0.detach().cpu().numpy(), p_neighbor_num=20, p_layer_id=1)
 
 modified_adj_h1 = low_pass_adj_sym(base_adj, sim_adj_h1, hidden_low_pass_h0.detach().cpu().numpy(), p_filter_value=1)
 modified_adj_h1_t = t.from_numpy(modified_adj_h1).float().cuda()
-hidden_low_pass_h1 = modified_adj_h1_t @ hidden_low_pass_h0 @ attack_info['model_weight'][1]
+hidden_low_pass_h1 = modified_adj_h1_t @ hidden_low_pass_h0 @ model.gc2.weight
+if model.with_bias:
+    hidden_low_pass_h1 = hidden_low_pass_h1 + model.gc2.bias
 
 h2_softmax = F.log_softmax(hidden_low_pass_h1, dim=1)
 
-acc_after_low_pass = utils.accuracy(h2_softmax[idx_test_attack], t.from_numpy(label_not_one_hot[idx_test_attack]).cuda())
+acc_after_low_pass = utils.accuracy(h2_softmax[idx_test], labels[idx_test])
+

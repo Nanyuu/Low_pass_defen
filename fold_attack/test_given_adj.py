@@ -15,6 +15,6 @@ data_load = dataset.c_dataset_loader(opt.dataset, ".{}".format(opt.data_path))
 adj, features, label, _,_,_ = data_load.process_data()
 labels = F_Info.F_one_hot_to_label(label)
 
-test_given_adj(per_adj, features, labels, idx_info['train'],idx_info['val'],idx_info['test'])
+surrogate = test_given_adj(per_adj, features, labels, idx_info['train'],idx_info['val'],idx_info['test'])
 
 

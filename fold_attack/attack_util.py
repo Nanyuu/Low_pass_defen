@@ -27,6 +27,12 @@ def random_select_train_test(p_labels: np.ndarray, p_pick_num_each, p_rand_seed=
     return res_train, res_val, res_test
 
 def test_given_adj(p_adj:sp.csr_matrix, p_feat:np.ndarray, p_label:np.ndarray, p_train_idx,p_val_idx,p_test_idx):
+    """
+    Parameters:
+        p_adj : csr_matrix
+
+
+    """
     use_gpu = t.cuda.is_available()
     adj = p_adj.A
     features = p_feat
@@ -41,3 +47,6 @@ def test_given_adj(p_adj:sp.csr_matrix, p_feat:np.ndarray, p_label:np.ndarray, p
 
     # test_model
     surrogate.test(p_test_idx)
+
+    return surrogate
+

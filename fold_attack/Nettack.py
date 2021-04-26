@@ -13,7 +13,7 @@ from deeprobust.graph.utils import accuracy
 import scipy.sparse as sp
 
 opt = opts()
-rand_seed = 10
+rand_seed = 3
 device = 'cuda:0'
 
 data_load = dataset.c_dataset_loader(opt.dataset, ".{}".format(opt.data_path))
@@ -66,25 +66,47 @@ def multi_test_poison():
     degrees = adj.sum(0)
     adj = sp.csr_matrix(adj)
     features = sp.csr_matrix(features)
+    total_att_node = 1000      # 攻击的节点数目
 
     # node_list = np.random.choice(np.arange(adj.shape[0]), 10, False)
-    node_list = np.random.choice(idx_test, 1000, False)
+    node_list = np.random.choice(idx_test, total_att_node, replace=False)
+
+    # 每100个节点记录一次平均asr
+    adj_pert_record = {}
+    acc_pert_record = {}
+
     num = len(node_list)
     print('=== [Poisoning] Attacking %s nodes respectively ===' % num)
-    for target_node in tqdm(node_list):
+    acc = 0
+    target_node_id = 1
+    for target_node_idx in tqdm(node_list):
         n_perturbations = 2
         model = Nettack(surrogate, nnodes= adj.shape[0], attack_structure=True, attack_features=False,device='cuda:0')
         model = model.to('cuda:0')
-        model.attack(features, adj,labels,target_node, n_perturbations, verbose=False)
+        model.attack(features, adj,labels,target_node_idx, n_perturbations, verbose=False)
         modified_adj = model.modified_adj
-        if target_node% 50 == 0:
-            print("target_node_idx : {}".format(target_node))
-            acc = test_acc(modified_adj, features, target_node)
-        if target_node%200 == 0:
+        if target_node_id % 50 == 0:
+            print("target_node_idx : {}\n".format(target_node_idx))
+            acc = test_acc(modified_adj, features, target_node_idx)
+        if target_node_id % 100 == 0:
+            print("-------------Recoding---------\n")
+            adj_pert_record[target_node_id/100] = sp.csr_matrix(modified_adj)
+            acc_pert_record[target_node_id/100] = acc
             pass
         adj = modified_adj
-    return adj
+        target_node_id = target_node_id +1
+    info_collect = {}
+    info_collect['adj_per'] = adj_pert_record
+    info_collect['surrogate'] = surrogate
+    info_collect['idx_train'] = idx_train
+    info_collect['idx_val'] = idx_val
+    info_collect['idx_test'] = idx_test
+    info_collect['acc_after_att'] = acc_pert_record
+    info_collect['total_att_node'] = total_att_node
+    info_collect['random_seed'] = rand_seed
+    return info_collect
 
 if __name__ == '__main__':
-    adj = multi_test_poison()
+    attack_info = multi_test_poison()
+    t.save(attack_info, './GCN/Nettack/attack_info_{}'.format(rand_seed))
 
