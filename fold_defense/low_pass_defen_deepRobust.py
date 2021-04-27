@@ -24,13 +24,15 @@ opt.model = 'GCN'
 data_load = dataset.c_dataset_loader(opt.dataset, opt.data_path)
 base_adj, base_feat,_,_,_,_  = data_load.process_data()
 
-model = t.load("../fold_attack/surrogate")
-adj_per = sp.load_npz("../fold_attack/pertAdj.npz").A
-idx_info = t.load("../fold_attack/idx_info")
+attack_info = t.load("../fold_attack/GCN/Nettack/attack_info_1")
 
-idx_train = idx_info['train']
-idx_val = idx_info['val']
-idx_test = idx_info['test']
+
+adj_per = attack_info['adj_per'][15].A
+model = attack_info['surrogate']
+
+idx_train = attack_info['idx_train']
+idx_val = attack_info['idx_val']
+idx_test = attack_info['idx_test']
 
 labels = model.labels
 
@@ -51,7 +53,7 @@ output = F.log_softmax(hidden, dim=1)
 acc_after_attack = utils.accuracy(output[idx_test], labels[idx_test])
 
 # do the low_pass
-sim_adj_h0 = simGraph_init(base_feat, p_neighbor_num=20, p_layer_id=0)
+sim_adj_h0 = simGraph_init(base_feat, p_neighbor_num=0, p_layer_id=0)
 
 modified_adj_h0 = low_pass_adj_sym(adj_per, sim_adj_h0, base_feat, p_filter_value=1)
 
@@ -65,7 +67,7 @@ if model.with_relu:
     hidden_low_pass_h0 = F.relu(hidden_low_pass_h0)
 
 
-sim_adj_h1 = simGraph_init(hidden_low_pass_h0.detach().cpu().numpy(), p_neighbor_num=20, p_layer_id=1)
+sim_adj_h1 = simGraph_init(hidden_low_pass_h0.detach().cpu().numpy(), p_neighbor_num=0, p_layer_id=1)
 
 modified_adj_h1 = low_pass_adj_sym(base_adj, sim_adj_h1, hidden_low_pass_h0.detach().cpu().numpy(), p_filter_value=1)
 modified_adj_h1_t = t.from_numpy(modified_adj_h1).float().cuda()

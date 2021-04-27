@@ -13,7 +13,8 @@ from deeprobust.graph.utils import accuracy
 import scipy.sparse as sp
 
 opt = opts()
-rand_seed = 3
+rand_seed = 10
+print("rand_seed = {}".format(rand_seed))
 device = 'cuda:0'
 
 data_load = dataset.c_dataset_loader(opt.dataset, ".{}".format(opt.data_path))
@@ -66,7 +67,7 @@ def multi_test_poison():
     degrees = adj.sum(0)
     adj = sp.csr_matrix(adj)
     features = sp.csr_matrix(features)
-    total_att_node = 1000      # 攻击的节点数目
+    total_att_node = 2000      # 攻击的节点数目
 
     # node_list = np.random.choice(np.arange(adj.shape[0]), 10, False)
     node_list = np.random.choice(idx_test, total_att_node, replace=False)
@@ -86,7 +87,7 @@ def multi_test_poison():
         model.attack(features, adj,labels,target_node_idx, n_perturbations, verbose=False)
         modified_adj = model.modified_adj
         if target_node_id % 50 == 0:
-            print("target_node_idx : {}\n".format(target_node_idx))
+            print("\ntarget_node_idx : {}".format(target_node_idx))
             acc = test_acc(modified_adj, features, target_node_idx)
         if target_node_id % 100 == 0:
             print("-------------Recoding---------\n")

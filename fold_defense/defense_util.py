@@ -24,6 +24,8 @@ def simGraph_init(p_feat:np.ndarray, p_neighbor_num: int, p_layer_id: int):
     sim_mat = cosine_similarity(temp_feat)
 
     sim_mat[(np.arange(len(sim_mat)), np.arange(len(sim_mat)))] = 0
+    if p_neighbor_num == 0:
+        return np.zeros([temp_feat.shape[0],temp_feat.shape[0]])
 
     for i in range(len(sim_mat)):
         arg_sort = np.argsort(sim_mat[i])
