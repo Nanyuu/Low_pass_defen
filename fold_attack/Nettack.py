@@ -13,9 +13,10 @@ from deeprobust.graph.utils import accuracy
 import scipy.sparse as sp
 
 opt = opts()
-rand_seed = 10
+rand_seed = 11
 print("rand_seed = {}".format(rand_seed))
 device = 'cuda:0'
+opt.dataset = "citeseer"
 
 data_load = dataset.c_dataset_loader(opt.dataset, ".{}".format(opt.data_path))
 adj, features, label, _,_,_ = data_load.process_data()
@@ -89,7 +90,7 @@ def multi_test_poison():
         if target_node_id % 50 == 0:
             print("\ntarget_node_idx : {}".format(target_node_idx))
             acc = test_acc(modified_adj, features, target_node_idx)
-        if target_node_id % 100 == 0:
+        if target_node_id % 100 == 0 or target_node_id == 1:
             print("-------------Recoding---------\n")
             adj_pert_record[target_node_id/100] = sp.csr_matrix(modified_adj)
             acc_pert_record[target_node_id/100] = acc
@@ -109,5 +110,5 @@ def multi_test_poison():
 
 if __name__ == '__main__':
     attack_info = multi_test_poison()
-    t.save(attack_info, './GCN/Nettack/attack_info_{}'.format(rand_seed))
+    t.save(attack_info, './GCN/Nettack/attack_info_{}_{}'.format(opt.dataset,rand_seed))
 

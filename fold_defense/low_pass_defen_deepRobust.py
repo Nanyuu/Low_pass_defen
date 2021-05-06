@@ -19,12 +19,15 @@ opt.data_path = r"../fold_data/Data/Planetoid"
 opt.model_path = "../checkpoint"
 opt.dataset = 'cora'
 opt.model = 'GCN'
+neighbor_num = 0
 
 # 读取数据集
 data_load = dataset.c_dataset_loader(opt.dataset, opt.data_path)
 base_adj, base_feat,_,_,_,_  = data_load.process_data()
-
-attack_info = t.load("../fold_attack/GCN/Nettack/attack_info_1")
+if opt.dataset == 'cora':
+    attack_info = t.load("../fold_attack/GCN/Nettack/attack_info_1".format(opt.dataset))
+else:
+    attack_info = t.load("../fold_attack/GCN/Nettack/attack_info_{}_11".format(opt.dataset))
 
 
 adj_per = attack_info['adj_per'][15].A
@@ -53,7 +56,7 @@ output = F.log_softmax(hidden, dim=1)
 acc_after_attack = utils.accuracy(output[idx_test], labels[idx_test])
 
 # do the low_pass
-sim_adj_h0 = simGraph_init(base_feat, p_neighbor_num=0, p_layer_id=0)
+sim_adj_h0 = simGraph_init(base_feat, p_neighbor_num=neighbor_num, p_layer_id=0)
 
 modified_adj_h0 = low_pass_adj_sym(adj_per, sim_adj_h0, base_feat, p_filter_value=1)
 
@@ -67,7 +70,7 @@ if model.with_relu:
     hidden_low_pass_h0 = F.relu(hidden_low_pass_h0)
 
 
-sim_adj_h1 = simGraph_init(hidden_low_pass_h0.detach().cpu().numpy(), p_neighbor_num=0, p_layer_id=1)
+sim_adj_h1 = simGraph_init(hidden_low_pass_h0.detach().cpu().numpy(), p_neighbor_num=neighbor_num, p_layer_id=1)
 
 modified_adj_h1 = low_pass_adj_sym(base_adj, sim_adj_h1, hidden_low_pass_h0.detach().cpu().numpy(), p_filter_value=1)
 modified_adj_h1_t = t.from_numpy(modified_adj_h1).float().cuda()

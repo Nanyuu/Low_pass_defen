@@ -15,7 +15,7 @@ opt = opts()
 rand_seed = 10
 
 data_load = dataset.c_dataset_loader(opt.dataset, ".{}".format(opt.data_path))
-adj, features, label, _,_,_ = data_load.process_data()
+adj, features, label, _, _, _ = data_load.process_data()
 labels = F_Info.F_one_hot_to_label(label)
 
 # data = Dataset(root='{}/'.format(opts.data_path_graphRobust), name='cora')
@@ -28,13 +28,13 @@ idx_unlabeled = np.union1d(idx_val, idx_test)
 
 # Setup Surrogate model
 surrogate = GCN(nfeat=features.shape[1], nclass=labels.max().item() + 1,
-                     nhid=16, dropout=0, with_relu=False, with_bias=False, device='cuda').cuda()
+                nhid=16, dropout=0, with_relu=False, with_bias=False, device='cpu').cpu()
 surrogate.fit(features, adj, labels, idx_train, idx_val, patience=30, verbose=True)
 # Setup Attack Model
 model = Metattack(surrogate, nnodes=adj.shape[0], feature_shape=features.shape,
-                       attack_structure=True, attack_features=False, device='cuda', lambda_=0)
+                  attack_structure=True, attack_features=False, device='cpu', lambda_=0).cpu()
 # Attack
-n_perturbations = (idx_train.shape[0] + idx_val.shape[0])*2
+n_perturbations = 1500
 model.attack(features, adj, labels, idx_train, idx_unlabeled, n_perturbations=n_perturbations, ll_constraint=False)
 modified_adj = model.modified_adj
 
@@ -43,8 +43,7 @@ attack_name = "MetAttack"
 opt.is_save = True
 if opt.is_save:
 
-
-    base_root = "./adj_After_Attack/{}/GCN/".format(attack_name)
+    base_root = ".{}/{}/attack_info_{}".format(GCN,attack_name,rand_seed)
     if not os.path.exists(base_root):
         os.mkdir(base_root)
     collect_info = {}
@@ -60,8 +59,3 @@ if opt.is_save:
     collect_info['n_perturbations'] = n_perturbations
 
     t.save(collect_info, "{}/attack_info_{}".format(base_root, test_id))
-
-
-
-
-
