@@ -43,7 +43,7 @@ attack_name = "MetAttack"
 opt.is_save = True
 if opt.is_save:
 
-    base_root = ".{}/{}/attack_info_{}".format(GCN,attack_name,rand_seed)
+    base_root = "./{}/{}/".format("GCN",attack_name,rand_seed)
     if not os.path.exists(base_root):
         os.mkdir(base_root)
     collect_info = {}
@@ -52,10 +52,11 @@ if opt.is_save:
     collect_info['idx_val'] = idx_val
     collect_info['acc_after_attack'] = model.acc_after_attack
     collect_info['rand_seed'] = rand_seed
-    collect_info['modified_adj'] = sp.csr_matrix(modified_adj.detach().cpu().numpy())
+    collect_info['adj_per'] = sp.csr_matrix(modified_adj.detach().cpu().numpy())
     collect_info['model_weight'] = model.weights
     collect_info['with_bias'] = False
     collect_info['with_relu'] = False
     collect_info['n_perturbations'] = n_perturbations
+    collect_info['surrogate'] = surrogate
 
     t.save(collect_info, "{}/attack_info_{}".format(base_root, test_id))
