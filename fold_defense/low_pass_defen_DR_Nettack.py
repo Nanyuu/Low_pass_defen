@@ -20,14 +20,15 @@ opt.model_path = "../checkpoint"
 opt.dataset = 'cora'
 opt.model = 'GCN'
 neighbor_num = 0
+rand_seed = 12
 
 # 读取数据集
 data_load = dataset.c_dataset_loader(opt.dataset, opt.data_path)
 base_adj, base_feat,_,_,_,_  = data_load.process_data()
-if opt.dataset == 'cora':
-    attack_info = t.load("../fold_attack/GCN/Nettack/attack_info_1".format(opt.dataset))
+if opt.dataset == 'cora' and rand_seed<10:
+    attack_info = t.load("../fold_attack/GCN/Nettack/attack_info_{}".format(opt.dataset,rand_seed))
 else:
-    attack_info = t.load("../fold_attack/GCN/Nettack/attack_info_{}_11".format(opt.dataset))
+    attack_info = t.load("../fold_attack/GCN/Nettack/attack_info_{}_{}".format(opt.dataset,rand_seed))
 
 
 adj_per = attack_info['adj_per'][15].A

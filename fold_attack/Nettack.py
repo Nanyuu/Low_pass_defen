@@ -13,10 +13,10 @@ from deeprobust.graph.utils import accuracy
 import scipy.sparse as sp
 
 opt = opts()
-rand_seed = 11
+rand_seed = 12
 print("rand_seed = {}".format(rand_seed))
 device = 'cuda:0'
-opt.dataset = "citeseer"
+opt.dataset = "cora"
 
 data_load = dataset.c_dataset_loader(opt.dataset, ".{}".format(opt.data_path))
 adj, features, label, _,_,_ = data_load.process_data()
@@ -71,7 +71,7 @@ def multi_test_poison():
     total_att_node = 2000      # 攻击的节点数目
 
     # node_list = np.random.choice(np.arange(adj.shape[0]), 10, False)
-    node_list = np.random.choice(idx_test, total_att_node, replace=False)
+    node_list = np.random.choice(np.arange(adj.shape[0]), total_att_node, replace=False)
 
     # 每100个节点记录一次平均asr
     adj_pert_record = {}
@@ -106,6 +106,7 @@ def multi_test_poison():
     info_collect['acc_after_att'] = acc_pert_record
     info_collect['total_att_node'] = total_att_node
     info_collect['random_seed'] = rand_seed
+    info_collect['pert_node_list'] = node_list
     return info_collect
 
 if __name__ == '__main__':
