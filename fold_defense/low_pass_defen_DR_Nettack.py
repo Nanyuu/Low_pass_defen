@@ -19,7 +19,7 @@ opt.data_path = r"../fold_data/Data/Planetoid"
 opt.model_path = "../checkpoint"
 opt.dataset = 'cora'
 opt.model = 'GCN'
-neighbor_num = 0
+neighbor_num = 20
 rand_seed = 12
 
 # 读取数据集

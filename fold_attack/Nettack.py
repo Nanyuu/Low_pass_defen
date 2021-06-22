@@ -13,8 +13,9 @@ from deeprobust.graph.utils import accuracy
 import scipy.sparse as sp
 
 opt = opts()
-rand_seed = 12
-print("rand_seed = {}".format(rand_seed))
+rand_seed = 1
+n_perturbations = 1
+
 device = 'cuda:0'
 opt.dataset = "cora"
 
@@ -82,7 +83,7 @@ def multi_test_poison():
     acc = 0
     target_node_id = 1
     for target_node_idx in tqdm(node_list):
-        n_perturbations = 2
+
         model = Nettack(surrogate, nnodes= adj.shape[0], attack_structure=True, attack_features=False,device='cuda:0')
         model = model.to('cuda:0')
         model.attack(features, adj,labels,target_node_idx, n_perturbations, verbose=False)
@@ -110,6 +111,10 @@ def multi_test_poison():
     return info_collect
 
 if __name__ == '__main__':
-    attack_info = multi_test_poison()
-    t.save(attack_info, './GCN/Nettack/attack_info_{}_{}'.format(opt.dataset,rand_seed))
+    for i in range(1,5):
+        rand_seed = i
+        n_perturbations = 3
+        print("rand_seed = {}".format(rand_seed))
+        attack_info = multi_test_poison()
+        t.save(attack_info, './GCN/Nettack/3_pert/attack_info_{}_{}'.format(opt.dataset,rand_seed))
 

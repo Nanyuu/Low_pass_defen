@@ -71,7 +71,7 @@ opt.data_path = r"../fold_data/Data/Planetoid"
 opt.model_path = "../checkpoint"
 opt.dataset = 'cora'
 opt.model = 'GCN'
-rand_seed = 8
+rand_seed = 2
 
 # 读取数据集
 data_load = dataset.c_dataset_loader(opt.dataset, opt.data_path)
